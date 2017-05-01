@@ -1,0 +1,8 @@
+rootProject.name = 'dsrs-app'
+
+include ':dsrs-business'
+include ':dsrs-core'
+include ':dsrs-rest'
+include ':dsrs-gatling-test'
+
+include ':dsrs-rest:dsrs-ref-data'

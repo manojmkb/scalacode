@@ -1,0 +1,23 @@
+{
+  "errorType": "validationError",
+  "errorCode": "validation.error",
+  "apiMessage": "Data Validation issue, please correct the data and try again",
+  "validationErrors": [
+    {
+      "path": "${path}",
+      "errorCode": "${errorCode}",
+      "apiMessage": "${apiMessage}"
+    },
+    {
+      "path": "${path2}",
+      "errorCode": "${errorCode2}",
+      "apiMessage": "${apiMessage2}"
+    },
+    {
+      "path": "${path3}",
+      "errorCode": "${errorCode3}",
+      "apiMessage": "${apiMessage3}"
+    }
+  ],
+  "resultType": "error"
+}

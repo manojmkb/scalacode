@@ -1,0 +1,5 @@
+dependencies {
+    compile "$archNgGroupId:arch-ref-data:$archNgVersion"
+}
+
+apply from: "$ffmToolGradleShared/scala/scala-jars-publish.gradle"

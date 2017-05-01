@@ -1,0 +1,111 @@
+def simulationClass = 'example.simulation.ExampleRegressionSimulation'
+
+
+apply plugin: 'application'
+
+
+dependencies {
+    compile "$archNgGroupId:arch-gatling:$archNgVersion"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            version project.version
+            from components.java
+            artifact distTar
+        }
+    }
+}
+
+task createWorkarounfDirs << {
+    def folder = file("target/test-classes")
+    if( !folder.exists() ) {
+        folder.mkdirs()
+    }
+}
+
+classes.dependsOn createWorkarounfDirs
+
+mainClassName = 'io.gatling.app.Gatling'
+
+startScripts {
+
+
+    def unixConfigureClasspathVar = { findClasspath, pathSeparator, line ->
+        line = line.replaceAll(~/^${findClasspath}=.*$/) { original ->
+            original += "${pathSeparator}\$APP_HOME/conf"
+            original += "${pathSeparator}\$APP_HOME/user-files"
+        }
+    }
+
+    def windowConfigureClasspathVar = { findClasspath, pathSeparator, line ->
+        line = line.replaceAll(~/^${findClasspath}=.*$/) { original ->
+            original += "${pathSeparator}%APP_HOME%\\conf"
+            original += "${pathSeparator}%APP_HOME%\\user-files"
+        }
+    }
+
+    def configureUnixClasspath = unixConfigureClasspathVar.curry('CLASSPATH', ':')
+    def configureWindowsClasspath = windowConfigureClasspathVar.curry('set CLASSPATH', ';')
+
+    doLast {
+
+        unixScript.text =
+                unixScript
+                        .readLines()
+                        .collect(configureUnixClasspath)
+                        .join('\n')
+
+        windowsScript.text =
+                windowsScript
+                        .readLines()
+                        .collect(configureWindowsClasspath)
+                        .join('\r\n')
+
+    }
+
+}
+
+distributions {
+    main {
+        contents {
+            from("user-files") {
+                into "user-files"
+            }
+            from("conf") {
+                into "conf"
+            }
+            from("target") {
+                into "target"
+            }
+        }
+    }
+}
+
+distTar {
+    compression = Compression.GZIP
+}
+
+run {
+    // example
+    // ../gradlew run -Psimulation=component.PersonSearchFlowServiceSimulation
+
+    def defaultSim='smoketest.SmokeTestSimulation'
+    def commonPackage = 'gov.hhs.cms.dsrs.test.simulation.'
+    classpath += files("$projectDir/conf")
+    classpath += files("$projectDir/user-files")
+
+    args "-s"
+    if (project.hasProperty('simulation')) {
+        args "$commonPackage$simulation"
+    } else {
+        args "$commonPackage$defaultSim"
+    }
+}
+
+//skip analysis of gatling
+sonarqube {
+    skipProject = true
+}

@@ -1,0 +1,7 @@
+{
+    "resultType": "ERROR",
+    "error": {
+        "errorType": "${errorType}",
+        "apiMessage": "${apiMessage}"
+    }
+}

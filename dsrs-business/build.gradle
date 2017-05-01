@@ -1,0 +1,88 @@
+sourceSets.main.scala.srcDir "src/main/java"
+sourceSets.main.java.srcDirs = []
+
+apply from: "$ffmToolGradleShared/common/common-repo.gradle"
+//apply from: "$ffmToolGradleShared/publish/publish-nexus-repo-config.gradle"
+
+apply from: "$ffmToolGradleShared/java/java-compiler-config.gradle"
+apply from: "$ffmToolGradleShared/java/java-javadoc-config.gradle"
+apply from: "$ffmToolGradleShared/java/java-jacoco-config.gradle"
+apply from: "$ffmToolGradleShared/sonar-all/sonar-all-scalajava-config.gradle"
+apply from: "$ffmToolGradleShared/scala/scala-compiler-config.gradle"
+
+if (!jacocoActive.toBoolean()) {
+    logger.lifecycle "--> scoverage is active"
+
+    apply from: "$ffmToolGradleShared/scala/scala-coverage-config.gradle"
+    rootProject.tasks["sonarqube"].dependsOn reportScoverage
+    test.enabled = false
+} else {
+    println "==> jacoco is active"
+}
+
+
+apply from: "$ffmToolGradleShared/scala/scala-scaladoc-config.gradle"
+apply from: "$ffmToolGradleShared/scala/scala-sourcejar-config.gradle"
+
+
+
+scaladoc {
+    excludes += ["**/*.java"]
+}
+
+javadoc {
+    excludes += ["**/*.scala"]
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            version project.version
+            //from components.java
+            artifact jar
+            artifact scaladocJar
+            artifact scalaSourcesJar
+            artifact javadocJar
+            //artifact sourcesJar
+        }
+    }
+}
+//tasks["sonarqube"].dependsOn = []
+
+
+
+dependencies {
+    compile project(':dsrs-core')
+
+    compile "$archNgGroupId:arch-validation:$archNgVersion"
+    compile "$archNgGroupId:arch-ref-data:$archNgVersion"
+    compile "$archNgGroupId:arch-persistence-dynamodb:$archNgVersion"
+
+    testCompile scalatest_GJV
+    testCompile junit_GJV
+    testCompile play_test_GJV
+
+}
+
+
+task junitTest(type: GradleBuild){
+    description 'junitT - the test for test code with junit runner'
+    buildFile = 'build.gradle'
+    tasks = ['test']
+    startParameter.projectProperties = [jacocoActive: 'true']
+}
+
+task allSonar(type: GradleBuild){
+    description 'allS - report aggerated result to sonar'
+    buildFile = 'build.gradle'
+    tasks = ['clean', 'junitTest', 'sonarqube']
+}
+
+task doJavaTestReport(type: GradleBuild){
+    description 'junitT - the test for test code with junit runner'
+    buildFile = 'build.gradle'
+    tasks = ['test', 'jacocoTestReport']
+    startParameter.projectProperties = [jacocoActive: 'true']
+}
+

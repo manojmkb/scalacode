@@ -1,0 +1,60 @@
+<configuration>
+
+    <property file="${properties.home}/env/logging.properties" />
+    <property name="ENCODER_PATTERN"
+              value="%d [%thread] %-5level %logger{35} - [Context: userId=%X{userId}, roleId=%X{roleId}, clientSystemId=%X{clientSystemId}, requestId=%X{requestId}]: %msg%n"
+    />
+
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%coloredLevel - %logger - %message%n%xException</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.home}/server.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.home}/server.log.%i</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>20</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>250MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${ENCODER_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING-PRIVACY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${privacy.log.home}/privacy.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.home}/privacy.log.%i</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>20</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>250MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${ENCODER_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+      The logger name is typically the Java/Scala package name.
+      This configures the log level to log at for a package and its children packages.
+    -->
+
+    <logger name="privacy.log" level="DEBUG" additivity="false">
+        <appender-ref ref="ROLLING-PRIVACY" />
+    </logger>
+
+
+    <root level="DEBUG">
+        <appender-ref ref="ROLLING" />
+    </root>
+
+</configuration>
